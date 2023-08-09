@@ -44,7 +44,7 @@ class Person(BaseModel):
 
 
 def ner(data: str):
-    global gender, age, date, employment, schedule, education, salary, experience, fio, profession
+    global gender, age, date, employment, schedule, education, salary, experience, fio, profession, phone
 
     INT = type('INT')
     COMMA = eq(',')
@@ -62,10 +62,44 @@ def ner(data: str):
         if all((facts.first, facts.last, facts.middle)):
             fio = ' '.join([facts.last, facts.first, facts.middle])
 
-    """**********************Адрес проживания**********************"""
+    """**********************Телефон**********************"""
 
-    addr_extractor = AddrExtractor(morph_vocab)
-    print([_ for _ in addr_extractor(data)])
+    Call = morph_pipeline([
+        'телефон',
+        'тел.'
+    ])
+
+    plus = eq('+')
+    scob = in_('()')
+    tr = eq('-')
+    ddot = or_(eq(':'), eq(':'))
+
+    Tel = rule(
+        rule(plus).optional(),
+        rule(INT),
+        rule(scob).optional(),
+        rule(INT).optional(),
+        rule(scob).optional(),
+        rule(INT).optional(),
+        rule(tr).optional(),
+        rule(INT).optional(),
+        rule(tr).optional(),
+        rule(INT).optional()
+    )
+
+    TELEPHONE = rule(
+        Call,
+        rule(ddot).optional(),
+        Tel
+    )
+    parser = Parser(TELEPHONE)
+    for match in parser.findall(data):
+        start, stop = match.span
+        phone = data[start:stop]
+
+    """**********************Почта**********************"""
+
+    email = '' .join([x.strip(',.') for x in data.split() if '@' in x])
 
     """**********************Пол**********************"""
 
@@ -432,9 +466,17 @@ def ner(data: str):
     except Exception as _ex:
         print(_ex)
     try:
-        profession = profession.lower().replace('желаемая должность и зарплата', '').replace(' •', ',').replace(' ,',
-                                                                                                                ',')
+        profession = profession.lower().replace('желаемая должность и зарплата', '').replace(' •', ',').replace(' ,', ',')
         person.profession = ' '.join(profession.split()).strip()
+    except Exception as _ex:
+        print(_ex)
+    try:
+        phone = phone.lower().replace(': ', '').replace('телефон', '')
+        person.phone = phone
+    except Exception as _ex:
+        print(_ex)
+    try:
+        person.email = email
     except Exception as _ex:
         print(_ex)
 
@@ -449,3 +491,7 @@ def nlp(filename):
     else:
         person_model = ner(text)
         return person_model
+
+
+if __name__ == '__main__':
+    print(nlp('resume.txt'))
