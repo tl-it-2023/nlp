@@ -1,4 +1,6 @@
 from natasha import (
+    Segmenter,
+    LOC,
     MorphVocab,
     NamesExtractor, AddrExtractor
 )
@@ -420,6 +422,23 @@ def ner(data: str):
     for match in parser.findall(data):
         start, stop = match.span
         experience = data[start:stop]
+
+    """**********************Адрес проживания**********************"""
+    import string
+    segmenter = Segmenter()
+    morph_vocab = MorphVocab()
+    addr_extractor = AddrExtractor(morph_vocab)
+    R = ()
+    matches = addr_extractor(data)
+    facts = [i.fact.as_json for i in matches]
+    for i in range(len(facts)):
+        tmp = list(facts[i].values())
+    R = R + (tmp[1],':', tmp[0])
+    vowels_str = " ".join(R)
+    R = vowels_str
+
+    (str.maketrans('', '', string.punctuation))
+    print(R)
 
     """**********************Общий вывод**********************"""
 
