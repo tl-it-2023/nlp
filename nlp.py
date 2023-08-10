@@ -500,13 +500,3 @@ def parser_resume(data: str):
         print(_ex)
 
     return person
-
-
-def nlp(filename):
-    try:
-        text = read_files(filename=filename)
-    except FileNotFoundError:
-        return 'FileNotFoundError'
-    else:
-        person_model = parser_resume(text)
-        return person_model
