@@ -45,7 +45,7 @@ class Person(BaseModel):
     email: str = None
 
 
-def ner(data: str):
+def parser_resume(data: str):
     global gender, age, date, employment, schedule, education, salary, experience, fio, profession, phone
 
     INT = type('INT')
@@ -508,10 +508,5 @@ def nlp(filename):
     except FileNotFoundError:
         return 'FileNotFoundError'
     else:
-        person_model = ner(text)
+        person_model = parser_resume(text)
         return person_model
-
-
-if __name__ == '__main__':
-    print("Test git")
-    print(nlp('resume.txt'))
